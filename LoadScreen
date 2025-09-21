@@ -1,0 +1,346 @@
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "antibrara"
+gui.ResetOnSpawn = false
+gui.Parent = playerGui
+
+local mainFrame = Instance.new("Frame")
+mainFrame.Name = "MainFrame"
+mainFrame.Size = UDim2.new(0, 450, 0, 350)
+mainFrame.Position = UDim2.new(0.5, -225, 0.5, -175)
+mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+mainFrame.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
+mainFrame.BorderSizePixel = 0
+mainFrame.ClipsDescendants = true
+mainFrame.Parent = gui
+
+local backgroundImage = Instance.new("ImageLabel")
+backgroundImage.Size = UDim2.new(1, 0, 1, 0)
+backgroundImage.Image = "rbxassetid://113811158122751"
+backgroundImage.ImageTransparency = 0.85
+backgroundImage.ScaleType = Enum.ScaleType.Crop
+backgroundImage.BackgroundTransparency = 1
+backgroundImage.Parent = mainFrame
+
+local titleBar = Instance.new("Frame")
+titleBar.Name = "TitleBar"
+titleBar.Size = UDim2.new(1, 0, 0, 30)
+titleBar.BackgroundColor3 = Color3.fromRGB(180, 180, 180)
+titleBar.BorderSizePixel = 0
+titleBar.Parent = mainFrame
+
+local title = Instance.new("TextLabel")
+title.Name = "Title"
+title.Size = UDim2.new(1, -30, 1, 0)
+title.Position = UDim2.new(0, 10, 0, 0)
+title.BackgroundTransparency = 1
+title.Text = "Choose A UI"
+title.TextColor3 = Color3.fromRGB(50, 50, 50)
+title.TextXAlignment = Enum.TextXAlignment.Center
+title.Font = Enum.Font.GothamSemibold
+title.TextSize = 20
+title.Parent = titleBar
+
+local closeButton = Instance.new("TextButton")
+closeButton.Name = "CloseButton"
+closeButton.Size = UDim2.new(0, 30, 0, 30)
+closeButton.Position = UDim2.new(1, -30, 0, 0)
+closeButton.BackgroundColor3 = Color3.fromRGB(180, 180, 180)
+closeButton.BorderSizePixel = 0
+closeButton.Text = "×"
+closeButton.TextColor3 = Color3.fromRGB(50, 50, 50)
+closeButton.Font = Enum.Font.GothamBold
+closeButton.TextSize = 16
+closeButton.Parent = titleBar
+
+local tabsFrame = Instance.new("Frame")
+tabsFrame.Name = "TabsFrame"
+tabsFrame.Size = UDim2.new(1, 0, 0, 35)
+tabsFrame.Position = UDim2.new(0, 0, 0, 30)
+tabsFrame.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
+tabsFrame.BorderSizePixel = 0
+tabsFrame.Parent = mainFrame
+
+local tabsContainer = Instance.new("Frame")
+tabsContainer.Name = "TabsContainer"
+tabsContainer.Size = UDim2.new(1, 0, 1, 0)
+tabsContainer.BackgroundTransparency = 1
+tabsContainer.Parent = tabsFrame
+
+local tabsLayout = Instance.new("UIListLayout")
+tabsLayout.FillDirection = Enum.FillDirection.Horizontal
+tabsLayout.Padding = UDim.new(0, 0)
+tabsLayout.Parent = tabsContainer
+
+local contentFrame = Instance.new("Frame")
+contentFrame.Name = "ContentFrame"
+contentFrame.Size = UDim2.new(1, 0, 1, -65)
+contentFrame.Position = UDim2.new(0, 0, 0, 65)
+contentFrame.BackgroundTransparency = 1
+contentFrame.BorderSizePixel = 0
+contentFrame.Parent = mainFrame
+
+local function copyToClipboard(text)
+    local clipBoard = setclipboard or toclipboard or set_clipboard or (Clipboard and Clipboard.set)
+    if clipBoard then clipBoard(text) end
+end
+
+local tabs = {}
+local currentTab = nil
+
+local function createTab(tabName)
+    local tabButton = Instance.new("TextButton")
+    tabButton.Name = tabName
+    tabButton.Size = UDim2.new(0, 90, 1, 0)
+    tabButton.BackgroundColor3 = Color3.fromRGB(190, 190, 190)
+    tabButton.BorderSizePixel = 0
+    tabButton.Text = tabName
+    tabButton.TextColor3 = Color3.fromRGB(80, 80, 80)
+    tabButton.Font = Enum.Font.Gotham
+    tabButton.TextSize = 12
+    tabButton.Parent = tabsContainer
+    
+    local tabContent = Instance.new("ScrollingFrame")
+    tabContent.Name = tabName
+    tabContent.Size = UDim2.new(1, 0, 1, 0)
+    tabContent.BackgroundTransparency = 1
+    tabContent.Visible = false
+    tabContent.BorderSizePixel = 0
+    tabContent.ScrollBarThickness = 4
+    tabContent.ScrollBarImageColor3 = Color3.fromRGB(150, 150, 150)
+    tabContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    tabContent.Parent = contentFrame
+    
+    local tabGrid = Instance.new("UIGridLayout")
+    tabGrid.CellSize = UDim2.new(0.51, -10, 0, 280)
+    tabGrid.CellPadding = UDim2.new(0, 5, 0, 10)
+    tabGrid.StartCorner = Enum.StartCorner.TopLeft
+    tabGrid.FillDirection = Enum.FillDirection.Horizontal
+    tabGrid.FillDirectionMaxCells = 3
+    tabGrid.Parent = tabContent
+    
+    tabs[tabName] = {button = tabButton, content = tabContent}
+    
+    tabButton.MouseButton1Click:Connect(function()
+        for tabName, tabData in pairs(tabs) do
+            tabData.content.Visible = false
+            tabData.button.BackgroundColor3 = Color3.fromRGB(190, 190, 190)
+            tabData.button.TextColor3 = Color3.fromRGB(80, 80, 80)
+        end
+        
+        tabContent.Visible = true
+        tabButton.BackgroundColor3 = Color3.fromRGB(170, 170, 170)
+        tabButton.TextColor3 = Color3.fromRGB(30, 30, 30)
+        currentTab = {button = tabButton, content = tabContent}
+    end)
+    
+    return tabContent
+end
+
+local function tweenColor(object, property, targetColor, duration)
+    local tweenInfo = TweenInfo.new(duration, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+    local tween = TweenService:Create(object, tweenInfo, {[property] = targetColor})
+    tween:Play()
+    return tween
+end
+
+local function addButton(tab, buttonName, scriptToExecute)
+    local processedScript = string.gsub(scriptToExecute, "%[%{username%}%]", player.Name)
+    
+    local button = Instance.new("TextButton")
+    button.Name = buttonName
+    button.Size = UDim2.new(0, 150, 0, 50)
+    button.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
+    button.BorderSizePixel = 1
+    button.BorderColor3 = Color3.fromRGB(170, 170, 170)
+    button.Text = buttonName
+    button.TextColor3 = Color3.fromRGB(50, 50, 50)
+    button.Font = Enum.Font.GothamMedium
+    button.TextSize = 40
+    button.TextWrapped = true
+    button.AutoButtonColor = false
+    button.Parent = tab
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 6)
+    corner.Parent = button
+    
+    local stroke = Instance.new("UIStroke")
+    stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    stroke.Color = Color3.fromRGB(170, 170, 170)
+    stroke.Thickness = 1
+    stroke.Parent = button
+    
+    local isHolding = false
+    local holdStartTime = 0
+    local holdConnection = nil
+    local currentTweens = {}
+
+    local function cancelTweens()
+        for _, tween in pairs(currentTweens) do
+            tween:Cancel()
+        end
+        currentTweens = {}
+    end
+
+    local function applyHoverEffects()
+        cancelTweens()
+        currentTweens[1] = tweenColor(button, "BackgroundColor3", Color3.fromRGB(210, 210, 210), 0.2)
+        currentTweens[2] = tweenColor(stroke, "Color", Color3.fromRGB(140, 140, 140), 0.2)
+    end
+
+    local function applyNormalEffects()
+        cancelTweens()
+        currentTweens[1] = tweenColor(button, "BackgroundColor3", Color3.fromRGB(200, 200, 200), 0.2)
+        currentTweens[2] = tweenColor(stroke, "Color", Color3.fromRGB(170, 170, 170), 0.2)
+    end
+
+    local function applyPressEffects()
+        cancelTweens()
+        currentTweens[1] = tweenColor(button, "BackgroundColor3", Color3.fromRGB(190, 190, 190), 0.1)
+        currentTweens[2] = tweenColor(stroke, "Color", Color3.fromRGB(120, 120, 120), 0.1)
+    end
+
+    local function applyCopyEffects()
+        cancelTweens()
+        currentTweens[1] = tweenColor(button, "BackgroundColor3", Color3.fromRGB(160, 220, 160), 0.2)
+        currentTweens[2] = tweenColor(stroke, "Color", Color3.fromRGB(100, 180, 100), 0.2)
+        
+        task.delay(0.3, function()
+            if button and button.Parent then
+                applyNormalEffects()
+            end
+        end)
+    end
+    
+    button.MouseEnter:Connect(function()
+        if not isHolding then
+            applyHoverEffects()
+        end
+    end)
+    
+    button.MouseLeave:Connect(function()
+        if not isHolding then
+            applyNormalEffects()
+        end
+        isHolding = false
+        if holdConnection then
+            holdConnection:Disconnect()
+            holdConnection = nil
+        end
+        cancelTweens()
+    end)
+    
+    button.MouseButton1Down:Connect(function()
+        isHolding = true
+        holdStartTime = tick()
+        applyPressEffects()
+        
+        holdConnection = game:GetService("RunService").Heartbeat:Connect(function()
+            if isHolding and tick() - holdStartTime >= 1.5 then
+                copyToClipboard(processedScript)
+                applyCopyEffects()
+                
+                isHolding = false
+                if holdConnection then
+                    holdConnection:Disconnect()
+                    holdConnection = nil
+                end
+            end
+        end)
+    end)
+    
+    button.MouseButton1Up:Connect(function()
+        if isHolding then
+            local holdTime = tick() - holdStartTime
+            if holdTime < 1.5 then
+                applyNormalEffects()
+                loadstring(processedScript)()
+            end
+            isHolding = false
+        end
+        
+        if holdConnection then
+            holdConnection:Disconnect()
+            holdConnection = nil
+        end
+        cancelTweens()
+    end)
+end
+
+local visualPage = createTab("UI")
+
+if tabs["UI"] then
+    tabs["UI"].content.Visible = true
+    tabs["UI"].button.BackgroundColor3 = Color3.fromRGB(170, 170, 170)
+    tabs["UI"].button.TextColor3 = Color3.fromRGB(30, 30, 30)
+    currentTab = tabs["UI"]
+    
+    addButton(visualPage, "Rayfield UI", [[
+loadstring(game:HttpGet("https://raw.githubusercontent.com/ANTIBRAINROTKID/ANTIBRAINROT_KID-Hub/refs/heads/main/Hub"))()
+]])
+
+end
+
+if tabs["UI"] then
+    tabs["UI"].content.Visible = true
+    tabs["UI"].button.BackgroundColor3 = Color3.fromRGB(170, 170, 170)
+    tabs["UI"].button.TextColor3 = Color3.fromRGB(30, 30, 30)
+    currentTab = tabs["UI"]
+    
+    addButton(visualPage, "Starlight UI", [[
+
+]])
+
+end
+
+local dragging = false
+local dragStart, startPos
+
+titleBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = mainFrame.Position
+    end
+end)
+
+titleBar.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        if dragging then
+            local delta = input.Position - dragStart
+            mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
+        local delta = input.Position - dragStart
+        mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+    end
+end)
+
+closeButton.MouseButton1Click:Connect(function()
+    gui:Destroy()
+end)
+
+closeButton.MouseEnter:Connect(function()
+    closeButton.BackgroundColor3 = Color3.fromRGB(200, 150, 150)
+end)
+
+closeButton.MouseLeave:Connect(function()
+    closeButton.BackgroundColor3 = Color3.fromRGB(180, 180, 180)
+end)
