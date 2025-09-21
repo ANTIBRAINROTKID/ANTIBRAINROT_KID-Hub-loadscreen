@@ -295,7 +295,7 @@ if tabs["UI"] then
     currentTab = tabs["UI"]
     
     addButton(visualPage, "Starlight UI", [[
-
+https://raw.githubusercontent.com/ANTIBRAINROTKID/ANTIBRAINROT_KID-Hub-Starlight-UI/refs/heads/main/Hub
 ]])
 
 end
